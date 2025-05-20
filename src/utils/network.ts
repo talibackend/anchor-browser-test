@@ -1,4 +1,4 @@
-import { messages, request_methods } from "./consts";
+import { log_levels, messages, request_methods } from "./consts";
 import { log } from '../utils/logger';
 import { StatusCodes } from "http-status-codes";
 import fetch from "node-fetch";
@@ -24,15 +24,16 @@ export const openRequest = async (method : request_methods, url : string, body :
 
     let timeout = setTimeout(()=>{ controller.abort(); return messages.NETWORK_ERROR }, 60000);
     try{
-        log('info', { message : { url, options } });
+        log(log_levels.info, { message : { url, options } });
         const request = await fetch(url, options);
-        const response = await request.json();
-        log('info', { message : { response } });
+        // Changed to text only for the sake of make.com
+        const response = await request.text();
+        log(log_levels.info, { message : { response } });
         clearTimeout(timeout);
         return response;
     }catch(error){
         clearTimeout(timeout);
-        log('error', { message : { error } });
+        log(log_levels.error, { message : { error } });
         throw { ok : false, message : messages.NETWORK_ERROR, status : StatusCodes.INTERNAL_SERVER_ERROR };
     }
 }

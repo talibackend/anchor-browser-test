@@ -47,11 +47,12 @@ RUN npm run build
 COPY . .
 
 # Set environment variables
+ENV APP_NAME=
 ENV NODE_ENV=development
 ENV PORT=3000
 ENV DB_CONNECTION_STRING=
-ENV SECRET_KEY=
-ENV HASH_SALT=
+ENV OPEN_AI_API_KEY=
+ENV MAKE_WEBHOOK_URL=
 
 # Expose the port the app will run on
 EXPOSE ${PORT}

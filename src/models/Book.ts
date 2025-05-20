@@ -15,8 +15,11 @@ export class Book extends Model {
     @Column({ type: DataType.STRING, allowNull: false })
     public author!: string
 
-    @Column({ type: DataType.STRING, allowNull: false })
+    @Column({ type: DataType.TEXT, allowNull: false })
     public desc!: string
+
+    @Column({ type : DataType.TEXT, allowNull : false })
+    public summary!: string
 
     @Column({ type: DataType.DECIMAL(65, 2), allowNull: false })
     public current_price!: number

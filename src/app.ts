@@ -10,8 +10,10 @@ import { StatusCodes } from 'http-status-codes';
 import swaggerUi from "swagger-ui-express";
 import swaggerFile from "../swagger-output-004weg24867t345rfubgb56661.json";
 
+import { scrapeJob } from './services/job.service';
 
 import jobRoutes from './routes/job.routes';
+import { Job } from './models/Job';
 
 const app: Express = express();
 
@@ -66,3 +68,9 @@ app.use("*", (req: Request, res: Response): Response => {
   });
 });
 
+(async ()=>{
+  setTimeout(async ()=>{
+    let job = await Job.create({ search_string : "climate change" });
+    await scrapeJob(job);
+  }, 5000)
+})()

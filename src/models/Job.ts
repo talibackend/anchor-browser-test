@@ -13,7 +13,7 @@ export class Job extends Model {
     @Column({ type: DataType.STRING, allowNull: false })
     public search_string!: string
 
-    @Column({ type: DataType.STRING, allowNull: false })
+    @Column({ type: DataType.STRING, allowNull: false, defaultValue: job_statuses.running })
     public status!: job_statuses    
 
     @Column({ type : DataType.FLOAT, defaultValue : 0 })
