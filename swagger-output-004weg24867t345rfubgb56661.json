@@ -1,0 +1,175 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Anchor Browser BookDP",
+    "version": "1.0.0",
+    "description": ""
+  },
+  "host": "localhost:9898",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Auth"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/job/scrape": {
+      "post": {
+        "tags": [
+          "Job"
+        ],
+        "description": "Create Account",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateAccountPayload"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/RequestSuccessful"
+            },
+            "description": "OK"
+          },
+          "400": {
+            "schema": {
+              "$ref": "#/definitions/BadRequest"
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "schema": {
+              "$ref": "#/definitions/Unauthorized",
+              "ifStatusPresent": true
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "schema": {
+              "$ref": "#/definitions/Forbidden",
+              "ifStatusPresent": true
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "RequestSuccessful": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "example": true
+        },
+        "message": {
+          "type": "string",
+          "example": "Request Successful"
+        },
+        "status": {
+          "type": "number",
+          "example": 200
+        }
+      }
+    },
+    "InternalServerError": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "Sorry an internal server error occured."
+        },
+        "status": {
+          "type": "number",
+          "example": 500
+        }
+      }
+    },
+    "BadRequest": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "string"
+        },
+        "status": {
+          "type": "number",
+          "example": 400
+        }
+      }
+    },
+    "Unauthorized": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "Unauthorized request"
+        },
+        "status": {
+          "type": "number",
+          "example": 401
+        }
+      }
+    },
+    "NotFound": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "Information not found"
+        },
+        "status": {
+          "type": "number",
+          "example": 404
+        }
+      }
+    },
+    "Forbidden": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "example": false
+        },
+        "message": {
+          "type": "string",
+          "example": "Access forbidden"
+        },
+        "status": {
+          "type": "number",
+          "example": 403
+        }
+      }
+    }
+  }
+}
