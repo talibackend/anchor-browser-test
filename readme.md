@@ -33,7 +33,7 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
 *   **Language:** TypeScript
 *   **Runtime:** Node.js
 *   **Web Scraping:** Puppeteer
-*   **AI Integration:** [OpenAI API]
+*   **AI Integration:** OpenAI API
 *   **Workflow Automation:** Make.com
 *   **Concurrency Management:** Native Node.js using `Promise.all``.
 
@@ -55,8 +55,8 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
     ```bash
     cp .env.example .env
     ```
-    **Replace placeholders with your actual credentials and URLs.**
-    **You don't have to update the `DB_CONNECTION_STRING`, docker compose will help spin up the postgres DB**
+    #### **Replace placeholders with your actual credentials and URLs.**
+    #### **You don't have to update the `DB_CONNECTION_STRING`, docker compose will help spin up the postgres DB**
 
 
 3.  **Build & Start the Project with Docker**
@@ -64,8 +64,8 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
     docker build -t anchor_browser_test:latest .
     docker-compose up -d
     ```
-    **✅ The swagger docs should be available on http://localhost:9898/doc**
-    **The directory is binded to the docker container, so subsequent updates to the codebase will update the container automatically.**
+    #### **✅ The swagger docs should be available on http://localhost:9898/doc**
+    #### **The directory is binded to the docker container, so subsequent updates to the codebase will update the container automatically.**
 
 ## 🏗️ Architecture and Approach
 
@@ -113,13 +113,13 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
 
 ### ⏳ Time Complexity: `O(1)`
 
-The total execution time remains constant with respect to the number of books being processed.  
+The total execution time remains constant regardless the number of books being processed.  
 In practical terms, this means the entire job finishes once the **slowest** book has been scraped, enriched, and prepared.  
 All other books are processed in parallel, so the job does **not** scale linearly with the number of books.
 
 ### 🧠 Space Complexity: `O(n)`
 
-Each book’s data — including its raw content, AI-enriched summary, cost metadata, and delivery payload — is held in memory until the job completes.  
+Each book’s data — including its raw content, AI-enriched summary, cost metadata — is held in memory until the job completes.  
 Thus, memory usage scales **linearly** with the number of books processed.
 
 ## 🔗 Make.com Integration Setup

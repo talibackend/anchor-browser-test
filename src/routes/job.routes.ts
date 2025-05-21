@@ -1,9 +1,17 @@
 import express, { Router, Request, Response } from 'express';
 import controller from '../controllers/job.controller';
+import { rateLimit } from 'express-rate-limit';
+
+export const defaultRateLimit = rateLimit({
+    windowMs : 1 * 60 * 1000,
+    max : 1,
+    message : 'Too many requests, please try again later.'
+});
 
 const routes : Router = express.Router();
 
 routes.post('/scrape', 
+    defaultRateLimit,
     controller.scrape
     /**
         #swagger.description = 'Scrape Theme'
