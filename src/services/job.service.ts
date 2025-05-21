@@ -6,7 +6,7 @@ import { ScrapeDto } from "../dtos/job";
 import { ResponseType } from "../dtos/api";
 import { deduplicateArray, pauseExecution, replaceAll } from "../utils/general";
 import { openRequest } from "../utils/network";
-import { getSummaryAndRelevanceScore } from "./openai.service";
+import { getAuthorFromCover, getSummaryAndRelevanceScore } from "./openai.service";
 import puppeteer from "puppeteer";
 import { Book } from "../models/Book";
 import env from "../config/env";
@@ -20,29 +20,31 @@ export const scrapeService = async (payload: ScrapeDto): Promise<ResponseType> =
 }
 
 export const scrapeJob = async (job: Job): Promise<void> => {
-    let url = `https://bookdp.com.au/?s=${replaceAll(job.search_string.toLowerCase(), " ", "+")}&post_type=product`;
-    const timeout = 1000 * 60 * 2; // 1 minutes
+    try {
+        let url = `https://bookdp.com.au/?s=${replaceAll(job.search_string.toLowerCase(), " ", "+")}&post_type=product`;
+        const timeout = 1000 * 60 * 2; // 1 minutes
 
-    let browser = await puppeteer.launch({ headless: false, timeout });
-    let page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle0', timeout });
-    await page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight); });
-    await pauseExecution(1000);
-    await page.waitForNetworkIdle({ idleTime: 5000, timeout });
+        let browser = await puppeteer.launch({ headless: false, timeout });
+        let page = await browser.newPage();
+        await page.goto(url, { waitUntil: 'networkidle0', timeout });
+        // await page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight); });
+        // await pauseExecution(1000);
+        // await page.waitForNetworkIdle({ idleTime: 5000, timeout });
 
-    let links: Array<string> = await page.$$eval('a', (links: any) => { return links.map((link: any) => { return link.href }) });
-    links = deduplicateArray(links.filter((link: string) => link.startsWith("https://bookdp.com.au/products/")));
+        let links: Array<string> = await page.$$eval('a', (links: any) => { return links.map((link: any) => { return link.href }) });
+        links = deduplicateArray(links.filter((link: string) => link.startsWith("https://bookdp.com.au/products/")));
 
+        links = links.slice(0, 10);
 
-    const analyzeBookPage = async (link: string): Promise<void> => {
-        try {
-            return sequelize.transaction(async (transaction: any) => {
+        const analyzeBookPage = async (link: string): Promise<void> => {
+            try {
                 let page = await browser.newPage();
                 await page.goto(link, { waitUntil: 'networkidle0', timeout });
 
                 let title = (await page.$eval('title', (title: any) => { return title.innerText })).split("|")[0].trim();
                 let desc = await page.$eval('div#tab-description > div.woocommerce-tabs--description-content', (description: any) => { return description.innerText });
                 let prices = await page.$$eval('span.woocommerce-Price-amount > bdi', (prices: any) => { return prices.map((price: any) => { return price.innerText }) });
+                let cover = await page.$eval('img.wp-post-image', (img : any) => { return img.src });
                 let discounted_price = Number(prices[0].substring(1));
                 let original_price = Number(prices[1].substring(1));
                 let discount_amount = original_price - discounted_price;
@@ -51,6 +53,10 @@ export const scrapeJob = async (job: Job): Promise<void> => {
                 let value_score = Number(((relevance_score * (100 - discount_percent)) / 100).toPrecision(2));
 
                 await page.close();
+
+                if(author == "N/A"){
+                    author = await getAuthorFromCover(cover)
+                }
 
                 let payload = {
                     job_id: job.id,
@@ -67,29 +73,34 @@ export const scrapeJob = async (job: Job): Promise<void> => {
                     value_score
                 };
 
-                await openRequest(request_methods.post, env.MAKE_WEBHOOK_URL, payload);
+                return await sequelize.transaction(async (transaction: any) => {
+                    await openRequest(request_methods.post, env.MAKE_WEBHOOK_URL, payload);
 
-                await Book.create(payload, { transaction });
-                let currentJob = await Job.findOne({ where: { id: job.id }, transaction }) as Job;
-                currentJob.progress = currentJob.progress + percent_per_page;
-                await currentJob.save({ transaction });
-            });
-        } catch (error: any) {
-            log(log_levels.error, {error});
-            return;
+                    await Book.create(payload, { transaction });
+                    let currentJob = await Job.findOne({ where: { id: job.id }, transaction }) as Job;
+                    currentJob.progress = currentJob.progress + percent_per_page;
+                    await currentJob.save({ transaction });
+                });
+            } catch (error: any) {
+                log(log_levels.error, { error });
+                return;
+            }
         }
+
+
+        let percent_per_page = Math.ceil(100 / links.length);
+        let promises: Array<Promise<void>> = [];
+
+        // Used concurrency to trade off space for speed(O(1) time O(n) space)
+        for (let i = 0; i < links.length; i++) {
+            promises.push(analyzeBookPage(links[i]));
+        }
+
+        await Promise.all(promises);
+        await Job.update({ status: job_statuses.completed }, { where: { id: job.id } });
+        await browser.close();
+    } catch (error: any) {
+        log(log_levels.error, { error });
+        return
     }
-
-
-    let percent_per_page = Math.ceil(100 / links.length);
-    let promises : Array<Promise<void>> = [];
-
-    // Use concurrency to trade off space for speed(O(1) time O(n) space)
-    for(let i = 0; i < links.length; i++){
-        promises.push(analyzeBookPage(links[i]));
-    }
-
-    await Promise.all(promises);
-    await Job.update({ status : job_statuses.completed }, { where : { id : job.id } });
-    await browser.close();
 }
