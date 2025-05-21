@@ -73,6 +73,7 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
 
 -  **API Layer (e.g., using Express.js):**
     *   Handles incoming HTTP requests.
+    *   Performs rate limiting on requests.
     *   Responsible for validating input (e.g., presence of 'theme' in `/scrape` payload).
     *   Manages API endpoints:
         *   `POST /scrape`: Initiates a new job.
