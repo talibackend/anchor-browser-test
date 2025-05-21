@@ -55,7 +55,9 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
     ```bash
     cp .env.example .env
     ```
-    *Replace placeholders with your actual credentials and URLs.*
+    **Replace placeholders with your actual credentials and URLs.**
+    **You don't have to update the `DB_CONNECTION_STRING`, docker compose will help spin up the postgres DB**
+
 
 5.  **Build & Start the Project with Docker**
     ```bash
