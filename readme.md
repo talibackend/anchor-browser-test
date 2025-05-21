@@ -163,7 +163,15 @@ Thus, memory usage scales **linearly** with the number of books processed.
     *   Once configured, turn your scenario "ON" (usually a toggle switch at the bottom).
     *   Ensure "Run immediately" is enabled if you want it to process data as soon as it arrives.
 
-Now, whenever your TypeScript agent runs and sends data, your Make.com scenario will trigger and execute the defined actions.
+7. **Screenshots**
+    * Below are some screenshots related to the make scenerio and the google sheet
+![Screenshot 1](screenshots/2.png)
+![Screenshot 2](screenshots/3.png)
+![Screenshot 3](screenshots/4.png)
+![Screenshot 4](screenshots/5.png)
+![Screenshot 5](screenshots/6.png)
+![Screenshot 6](screenshots/7.png)
+![Screenshot 7](screenshots/8.png)
 
 ## 📝 Assumptions & Limitations
 
