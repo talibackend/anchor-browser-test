@@ -52,7 +52,7 @@ const doc = {
       status: 403,
     },
     ScrapePayload: {
-      search_string: "string"
+      theme: "string"
     },
     GetJobResponse: {
       "ok": true,
@@ -63,7 +63,7 @@ const doc = {
           "status": "running | completed | failed",
           "progress": "number",
           "id": "number",
-          "search_string": "string",
+          "theme": "string",
           "updatedAt": "date",
           "createdAt": "date"
         }

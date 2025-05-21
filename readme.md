@@ -63,6 +63,7 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
     docker-compose up -d
     ```
     **✅ The swagger docs should be available on http://localhost:9898/doc**
+    **The directory is binded to the docker container, so subsequent updates to the codebase will update the container automatically.**
 
 ## 🏗️ Architecture and Approach
 
