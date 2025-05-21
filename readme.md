@@ -94,7 +94,7 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
         let url = `https://bookdp.com.au/?s=${replaceAll(job.theme.toLowerCase(), " ", "+")}&post_type=product`;
         ```
         *   Extracts book data.
-        *   **Concurrency:** Scrapes multiple book details concurrently using `Promise.all()`.
+        *   **Concurrency:** Scrapes multiple book details concurrently using `Promise.all()`, exceptions at this stage are being silenced.
     *   **AI Enrichment:**
         *   Processes scraped data through the AI service.
         *   Author is also being extracted from the description, but sometimes description is not a reliable source, in such cases the cover image gets processed and the author is extracted from it.
