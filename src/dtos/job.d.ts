@@ -1,5 +1,5 @@
 export interface ScrapeDto{
-    search_string : string
+    theme : string
 }
 
 export interface OpenAIEnrichmentDto{

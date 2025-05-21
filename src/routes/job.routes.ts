@@ -12,7 +12,7 @@ routes.post('/scrape',
      */
 );
 
-routes.get('/:id', 
+routes.get('/status/:id', 
     controller.getJob
     /**
         #swagger.description = 'Get Job by ID'

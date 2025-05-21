@@ -11,11 +11,8 @@ export class Job extends Model {
     public id!: number
     
     @Column({ type: DataType.STRING, allowNull: false })
-    public search_string!: string
+    public theme!: string
 
     @Column({ type: DataType.STRING, allowNull: false, defaultValue: job_statuses.running })
-    public status!: job_statuses    
-
-    @Column({ type : DataType.FLOAT, defaultValue : 0 })
-    public progress!: number
+    public status!: job_statuses 
 }

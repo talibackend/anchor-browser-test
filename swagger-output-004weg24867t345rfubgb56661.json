@@ -68,7 +68,7 @@
         }
       }
     },
-    "/job/{id}": {
+    "/job/status/{id}": {
       "get": {
         "tags": [
           "Job"
