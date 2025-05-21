@@ -1,0 +1,17 @@
+services:
+  app:
+    image: anchor_browser_test:latest
+    ports:
+      - "9898:9898"
+    volumes:
+      - ./:/usr/src/app
+    environment:
+      - DB_CONNECTION_STRING=postgres://postgres:password@db:5432/book_dp
+  db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: book_dp 

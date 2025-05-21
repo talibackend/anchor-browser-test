@@ -3,7 +3,7 @@ FROM node:20
 
 # Install dependencies required for Puppeteer
 RUN apt-get update && apt-get install -y \
-    wget \
+    chromium \
     ca-certificates \
     fonts-liberation \
     libappindicator3-1 \
@@ -28,25 +28,16 @@ RUN apt-get update && apt-get install -y \
 # Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json first to take advantage of Docker cache
-COPY package*.json ./
-COPY tsconfig.json ./
-COPY babel.config.js ./
-COPY swagger-output-004weg24867t345rfubgb56661.json ./
+# Copy everything
+COPY . .
 
-# Install dependencies and Puppeteer
-RUN npm install && npm install -g typescript
+# Set Puppeteer's executable path environment variable to system-installed Chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
+# Install dependencies
+RUN npm install
 
-# Set environment variables
-ENV APP_NAME=
-ENV NODE_ENV=development
-ENV PORT=3000
-ENV DB_CONNECTION_STRING=
-ENV OPEN_AI_API_KEY=
-ENV MAKE_WEBHOOK_URL=
-
-# Expose the port the app will run on
+# Expose port
 EXPOSE ${PORT}
 
 # Start the application

@@ -48,7 +48,7 @@ export const scrapeJob = async (job: Job): Promise<void> => {
         let url = `https://bookdp.com.au/?s=${replaceAll(job.search_string.toLowerCase(), " ", "+")}&post_type=product`;
         const timeout = 1000 * 60 * 2; // 1 minutes
 
-        let browser = await puppeteer.launch({ headless: false, timeout });
+        let browser = await puppeteer.launch({ args : ['--no-sandbox'], timeout });
         let page = await browser.newPage();
         await page.goto(url, { waitUntil: 'networkidle0', timeout });
         // await page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight); });
@@ -106,7 +106,7 @@ export const scrapeJob = async (job: Job): Promise<void> => {
                     await currentJob.save({ transaction });
                 });
             } catch (error: any) {
-                log(log_levels.error, { error });
+                log(log_levels.error, error);
                 return;
             }
         }
@@ -124,7 +124,8 @@ export const scrapeJob = async (job: Job): Promise<void> => {
         await Job.update({ status: job_statuses.completed }, { where: { id: job.id } });
         await browser.close();
     } catch (error: any) {
-        log(log_levels.error, { error });
+        console.log(error);
+        log(log_levels.error, error);
         return
     }
 }
