@@ -68,9 +68,9 @@ app.use("*", (req: Request, res: Response): Response => {
   });
 });
 
-(async ()=>{
-  setTimeout(async ()=>{
-    let job = await Job.create({ search_string : "climate change" });
-    await scrapeJob(job);
-  }, 5000)
-})()
+// (async ()=>{
+//   setTimeout(async ()=>{
+//     let job = await Job.create({ search_string : "climate change" });
+//     await scrapeJob(job);
+//   }, 5000)
+// })()

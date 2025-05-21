@@ -9,7 +9,7 @@
   "basePath": "/",
   "tags": [
     {
-      "name": "Auth"
+      "name": "Job"
     }
   ],
   "schemes": [
@@ -21,22 +21,135 @@
         "tags": [
           "Job"
         ],
-        "description": "Create Account",
+        "description": "Scrape Theme",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/CreateAccountPayload"
+              "$ref": "#/definitions/ScrapePayload"
             }
           }
         ],
         "responses": {
           "200": {
             "schema": {
-              "$ref": "#/definitions/RequestSuccessful"
+              "$ref": "#/definitions/GetJobResponse"
             },
-            "description": "OK"
+            "description": "OK",
+            "in": "body"
+          },
+          "400": {
+            "schema": {
+              "$ref": "#/definitions/BadRequest"
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "schema": {
+              "$ref": "#/definitions/Unauthorized",
+              "ifStatusPresent": true
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "schema": {
+              "$ref": "#/definitions/Forbidden",
+              "ifStatusPresent": true
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/job/{id}": {
+      "get": {
+        "tags": [
+          "Job"
+        ],
+        "description": "Get Job by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/GetJobResponse"
+            },
+            "description": "OK",
+            "in": "body"
+          },
+          "400": {
+            "schema": {
+              "$ref": "#/definitions/BadRequest"
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "schema": {
+              "$ref": "#/definitions/Unauthorized",
+              "ifStatusPresent": true
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "schema": {
+              "$ref": "#/definitions/Forbidden",
+              "ifStatusPresent": true
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            },
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/job/results/{id}": {
+      "get": {
+        "tags": [
+          "Job"
+        ],
+        "description": "Get Job by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/ListJobBooksResponse"
+            },
+            "description": "OK",
+            "in": "body"
           },
           "400": {
             "schema": {
@@ -168,6 +281,172 @@
         "status": {
           "type": "number",
           "example": 403
+        }
+      }
+    },
+    "ScrapePayload": {
+      "type": "object",
+      "properties": {
+        "search_string": {
+          "type": "string",
+          "example": "string"
+        }
+      }
+    },
+    "GetJobResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "example": true
+        },
+        "message": {
+          "type": "string",
+          "example": "Request Successful."
+        },
+        "status": {
+          "type": "number",
+          "example": 200
+        },
+        "body": {
+          "type": "object",
+          "properties": {
+            "job": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "example": "running | completed | failed"
+                },
+                "progress": {
+                  "type": "string",
+                  "example": "number"
+                },
+                "id": {
+                  "type": "string",
+                  "example": "number"
+                },
+                "search_string": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "example": "date"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "example": "date"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ListJobBooksResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "example": true
+        },
+        "message": {
+          "type": "string",
+          "example": "Request Successful."
+        },
+        "status": {
+          "type": "number",
+          "example": 200
+        },
+        "body": {
+          "type": "object",
+          "properties": {
+            "books": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "example": "number"
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "author": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "desc": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "current_price": {
+                    "type": "string",
+                    "example": "number"
+                  },
+                  "original_price": {
+                    "type": "string",
+                    "example": "number"
+                  },
+                  "discount_amount": {
+                    "type": "string",
+                    "example": "number"
+                  },
+                  "discount_percent": {
+                    "type": "string",
+                    "example": "number"
+                  },
+                  "url": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "relevance_score": {
+                    "type": "string",
+                    "example": "number"
+                  },
+                  "value_score": {
+                    "type": "string",
+                    "example": "number"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "example": "date"
+                  },
+                  "updatedAt": {
+                    "type": "string",
+                    "example": "date"
+                  },
+                  "job_id": {
+                    "type": "string",
+                    "example": "number"
+                  }
+                }
+              }
+            },
+            "total_count": {
+              "type": "string",
+              "example": "number"
+            },
+            "total_pages": {
+              "type": "string",
+              "example": "number"
+            },
+            "limit": {
+              "type": "string",
+              "example": "number"
+            },
+            "offset": {
+              "type": "string",
+              "example": "number"
+            }
+          }
         }
       }
     }

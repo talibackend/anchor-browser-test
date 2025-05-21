@@ -2,7 +2,7 @@ import { Job } from "../models/Job";
 import { job_statuses, log_levels, messages, request_methods } from "../utils/consts";
 import { StatusCodes } from "http-status-codes";
 import { log } from "../utils/logger";
-import { ScrapeDto } from "../dtos/job";
+import { ListJobBooksDto, ScrapeDto, SingleIdDto } from "../dtos/job";
 import { ResponseType } from "../dtos/api";
 import { deduplicateArray, pauseExecution, replaceAll } from "../utils/general";
 import { openRequest } from "../utils/network";
@@ -12,11 +12,35 @@ import { Book } from "../models/Book";
 import env from "../config/env";
 import { sequelize } from "../config/database";
 
+export const listJobBooksService = async (payload : ListJobBooksDto) : Promise<ResponseType> =>{
+    let { id, limit, offset } = payload;
+
+    let books = await Book.findAll({ where : { job_id : id }, limit, offset });
+    let total_count = await Book.count({ where : { job_id : id } });
+    let total_pages = Math.ceil(total_count / limit);
+
+    if(offset > 0){
+        offset = offset / limit;
+    }
+
+    return { ok : true, message : messages.OK, status : StatusCodes.OK, body : { books, total_count, total_pages, limit, offset } };
+}
+
+export const getJobByIdService = async (payload : SingleIdDto) : Promise<ResponseType> =>{
+    const job = await Job.findOne({ where : { id : payload.id } });
+
+    if(!job){
+        throw { ok : false, message : messages.NOT_FOUND, status : StatusCodes.NOT_FOUND };
+    }
+
+    return { ok : true, message : messages.OK, status : StatusCodes.OK, body : { job } };
+}
+
 export const scrapeService = async (payload: ScrapeDto): Promise<ResponseType> => {
     const { search_string } = payload;
     const job = await Job.create({ search_string });
     scrapeJob(job);
-    return { ok: true, message: messages.OK, status: StatusCodes.OK }
+    return { ok: true, message: messages.OK, status: StatusCodes.OK, body : { job } }
 }
 
 export const scrapeJob = async (job: Job): Promise<void> => {

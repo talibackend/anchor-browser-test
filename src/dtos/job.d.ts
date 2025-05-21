@@ -7,3 +7,13 @@ export interface OpenAIEnrichmentDto{
     relevance_score : number,
     author : string | null
 }
+
+export interface SingleIdDto{
+    id : number
+}
+
+export interface ListJobBooksDto{
+    id : number,
+    offset : number,
+    limit : number
+}
