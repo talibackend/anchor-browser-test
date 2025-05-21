@@ -11,10 +11,10 @@ Automated agent to scrape book data from BookDP.com.au, enrich it with AI insigh
 
 This project is a TypeScript-based automation agent designed to:
 
-1.  **Scrape Book Data:** Utilizes Puppeteer to dynamically browse BookDP.com.au based on a user-provided thematic keyword (e.g., "australian history," "sci-fi novels").
-2.  **AI Enrichment:** Leverages an AI model (e.g., OpenAI's GPT) to add value to the scraped data. This could include generating summaries, getting relevance score.
-3.  **Cost Calculation:** Processes pricing information, value score, discounts.
-4.  **Productivity Integration:** Sends the structured, enriched data to a Make.com webhook, enabling seamless integration with tools like Google Sheets, Trello, Slack, Notion, etc.
+-  **Scrape Book Data:** Utilizes Puppeteer to dynamically browse BookDP.com.au based on a user-provided thematic keyword (e.g., "australian history," "sci-fi novels").
+-  **AI Enrichment:** Leverages an AI model (e.g., OpenAI's GPT) to add value to the scraped data. This could include generating summaries, getting relevance score.
+-  **Cost Calculation:** Processes pricing information, value score, discounts.
+-  **Productivity Integration:** Sends the structured, enriched data to a Make.com webhook, enabling seamless integration with tools like Google Sheets, Trello, Slack, Notion, etc.
 
 The core goal is to demonstrate robust web automation, AI integration, efficient data processing, and third-party workflow automation.
 
@@ -51,7 +51,7 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
     cd anchor-browser-test
     ```
 
-3.  **Set Up Environment Variables:**
+2.  **Set Up Environment Variables:**
     ```bash
     cp .env.example .env
     ```
@@ -59,7 +59,7 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
     **You don't have to update the `DB_CONNECTION_STRING`, docker compose will help spin up the postgres DB**
 
 
-5.  **Build & Start the Project with Docker**
+3.  **Build & Start the Project with Docker**
     ```bash
     docker build -t anchor_browser_test:latest .
     docker-compose up -d
@@ -71,7 +71,7 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
 
  The agent is designed as a web service with asynchronous background processing.
 
-1.  **API Layer (e.g., using Express.js):**
+-  **API Layer (e.g., using Express.js):**
     *   Handles incoming HTTP requests.
     *   Responsible for validating input (e.g., presence of 'theme' in `/scrape` payload).
     *   Manages API endpoints:
@@ -79,14 +79,14 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
         *   `GET /status/:id`: Checks job progress.
         *   `GET /results/:id`: Retrieves job output.
 
-2.  **Job Management System:**
+-  **Job Management System:**
     *   When a `/scrape` request is received:
         *   A unique `id` is generated.
         *   The job (theme, status: 'running') is stored in a postgres database.
         *   A background worker is being initialized for the job.
         *   A response containing the id of the job is returned.
 
-3.  **Background Worker Process:**
+-  **Background Worker Process:**
     *   **Scraping:**
         *   Uses Puppeteer to launch a browser.
         *   Navigates to the search output page of BookDP.com.au, this helps to skip entering the input. i.e:
@@ -105,7 +105,7 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
         *   Sends the final enriched data to the `MAKE_WEBHOOK_URL`.
     *   Updates job status to 'completed' or 'failed'.
 
-4.  **Data Store (for Jobs & Results):**
+-  **Data Store (for Jobs & Results):**
     *   A Postgres DB was used.
 
 
