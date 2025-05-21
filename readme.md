@@ -164,7 +164,8 @@ Thus, memory usage scales **linearly** with the number of books processed.
     *   Ensure "Run immediately" is enabled if you want it to process data as soon as it arrives.
 
 7. **Screenshots**
-    * Below are some screenshots related to the make scenerio and the google sheet
+    * Below are some screenshots related to the make scenerio and the google sheet  
+  
 ![Screenshot 1](screenshots/2.png)
 ![Screenshot 2](screenshots/3.png)
 ![Screenshot 3](screenshots/4.png)
