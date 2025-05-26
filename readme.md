@@ -11,7 +11,7 @@ Automated agent to scrape book data from BookDP.com.au, enrich it with AI insigh
 
 This project is a TypeScript-based automation agent designed to:
 
--  **Scrape Book Data:** Utilizes Puppeteer to dynamically browse BookDP.com.au based on a user-provided thematic keyword (e.g., "australian history," "sci-fi novels").
+-  **Scrape Book Data:** Utilizes Puppeteer & Browser Pool to dynamically browse BookDP.com.au based on a user-provided thematic keyword (e.g., "australian history," "sci-fi novels").
 -  **AI Enrichment:** Leverages an AI model (e.g., OpenAI's GPT) to add value to the scraped data. This could include generating summaries, getting relevance score.
 -  **Cost Calculation:** Processes pricing information, value score, discounts.
 -  **Productivity Integration:** Sends the structured, enriched data to a Make.com webhook, enabling seamless integration with tools like Google Sheets, Trello, Slack, Notion, etc.
@@ -21,7 +21,7 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
 ## ✨ Features
 
 *   **Keyword-based Scraping:** Dynamically fetches books related to any theme.
-*   **Robust Web Automation:** Powered by Puppeteer for handling dynamic web content.
+*   **Robust Web Automation:** Powered by Puppeteer with browser-pool for concurrent, load-balanced browser instance management and scraping.
 *   **Concurrent Processing:** Designed to scrape and process multiple book entries concurrently for significant speed improvements.
 *   **AI-Powered Insights:** Enriches raw data with intelligent summaries, classifications, or other AI-generated content.
 *   **Flexible Cost Analysis:** Basic cost extraction and calculation logic.
@@ -32,10 +32,10 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
 
 *   **Language:** TypeScript
 *   **Runtime:** Node.js
-*   **Web Scraping:** Puppeteer
+*   **Web Scraping:** Browser Pool & Puppeteer
 *   **AI Integration:** OpenAI API
 *   **Workflow Automation:** Make.com
-*   **Concurrency Management:** Native Node.js using `Promise.all``.
+*   **Messaging:** Apache Kafka
 
 ## ⚙️ Prerequisites
 
@@ -89,40 +89,44 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
 
 -  **Background Worker Process:**
     *   **Scraping:**
-        *   Uses Puppeteer to launch a browser.
+        *   Uses browser-pool to efficiently manage multiple Puppeteer browser instances.
         *   Navigates to the search output page of BookDP.com.au, this helps to skip entering the input. i.e:
         ```javascript
         let url = `https://bookdp.com.au/?s=${replaceAll(job.theme.toLowerCase(), " ", "+")}&post_type=product`;
         ```
         *   Extracts book data.
-        *   **Concurrency:** Scrapes multiple book details concurrently using `Promise.all()`, exceptions at this stage are being silenced.
-    *   **AI Enrichment:**
-        *   Processes scraped data through the AI service.
-        *   Author is also being extracted from the description, but sometimes description is not a reliable source, in such cases the cover image gets processed and the author is extracted from it.
-    *   **Cost Calculation:**
-        *   Calculates relevant cost information.
-    *   **Data Storage:** Stores the enriched results associated with the `jobId`.
-    *   **Make.com Integration Module:**
-        *   Sends the final enriched data to the `MAKE_WEBHOOK_URL`.
-        *   Google sheet is [https://docs.google.com/spreadsheets/d/1RMVdqPP_iDW1bjb0KGLRRkWQKZiQU7TkZ56i9ueLkWU/edit?usp=sharing](https://docs.google.com/spreadsheets/d/1RMVdqPP_iDW1bjb0KGLRRkWQKZiQU7TkZ56i9ueLkWU/edit?usp=sharing)
-    *   Updates job status to 'completed' or 'failed'.
+        *   Publish each book analysis to the `scrape_book_jobs` topic.
+        
+- **Kafka Worker:**
+    * Listens to the Kafka topic `scrape_book_jobs`.
 
--  **Data Store (for Jobs & Results):**
-    *   A Postgres DB was used.
+    * For each message:
+
+        * Scrapes relevant book data using Puppeteer from the browser-pool.
+
+        * Enriches the data with AI (summary, classification, etc.).
+
+        * Calculates derived metrics like discount scores.
+
+        * Sends the final structured result to a Make.com webhook.
+
+        *   Google sheet is [https://docs.google.com/spreadsheets/d/1RMVdqPP_iDW1bjb0KGLRRkWQKZiQU7TkZ56i9ueLkWU/edit?usp=sharing](https://docs.google.com/spreadsheets/d/1RMVdqPP_iDW1bjb0KGLRRkWQKZiQU7TkZ56i9ueLkWU/edit?usp=sharing)
+
+        * Store and update relevant data using a transaction.
+
+        This simplified, single-worker design ensures all processing happens asynchronously and in one place, making deployment and debugging easier while still enabling concurrency and resilience via Kafka.
 
 
 ## ⏱️ Concurrency & Performance
 
 ### ⏳ Time Complexity: `O(1)`
-
-The total execution time remains constant regardless the number of books being processed.  
-In practical terms, this means the entire job finishes once the **slowest** book has been scraped, enriched, and prepared.  
-All other books are processed in parallel, so the job does **not** scale linearly with the number of books.
+The system leverages Kafka's pub/sub model where each message is processed independently. Each message's processing happens in constant time (O(1)) with respect to its own size.
+With a retry policy of 3, the worst-case processing for a failed message is up to 3 retries. However, since retries are still constant time per attempt, the amortized time complexity remains O(1).
 
 ### 🧠 Space Complexity: `O(n)`
-
-Each book’s data — including its raw content, AI-enriched summary, cost metadata — is held in memory until the job completes.  
-Thus, memory usage scales **linearly** with the number of books processed.
+Here, n is the number of in-flight messages being concurrently processed.
+Even with retries, once a message is committed, it's no longer retained in memory.
+Because retries are published as new messages and old ones are fully committed, there's no cumulative memory buildup, and the space complexity remains O(n).
 
 ## 🔗 Make.com Integration Setup
 
@@ -185,8 +189,6 @@ Thus, memory usage scales **linearly** with the number of books processed.
 
 ## 💡 Future Improvements
 
-*   Batched concurrent execution, this would help to reduce failure rate due to stack overflow, but it also deals a significant damage on speed.
-*   Implementation of a more robust queue system
 *   Implement proxy rotation and user-agent switching.
 *   More sophisticated error handling and retry logic.
 *   GUI or web interface for easier use.
