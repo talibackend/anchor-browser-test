@@ -54,7 +54,7 @@ export const scrapeJob = async (job: Job): Promise<void> => {
         let links: Array<string> = await page.$$eval('div.product-inner > div.product-thumbnail > a', (links: any) => { return links.map((link: any) => { return link.href }) });
         links = deduplicateArray(links);
 
-        let percent_per_page = 100 / gitlinks.length;
+        let percent_per_page = 100 / links.length;
 
         await page.close();  
 
