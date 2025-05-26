@@ -30,15 +30,15 @@ export class Book extends Model {
     @Column({ type : DataType.DECIMAL(65, 2), defaultValue : 0 })
     public discount_amount!: number
 
-    @Column({ type : DataType.INTEGER, defaultValue : 0 })
+    @Column({ type : DataType.FLOAT, defaultValue : 0 })
     public discount_percent!: number
 
     @Column({ type : DataType.STRING, allowNull: false })
     public url!: string
 
-    @Column({ type : DataType.INTEGER, allowNull : false })
+    @Column({ type : DataType.FLOAT, allowNull : false })
     public relevance_score!: number
 
-    @Column({ type : DataType.INTEGER, allowNull : false })
+    @Column({ type : DataType.FLOAT, allowNull : false })
     public value_score!: number
 }
