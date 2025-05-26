@@ -94,8 +94,8 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
         ```javascript
         let url = `https://bookdp.com.au/?s=${replaceAll(job.theme.toLowerCase(), " ", "+")}&post_type=product`;
         ```
-        *   Extracts book data.
-        *   Publish each book analysis to the `scrape_book_jobs` topic.
+        *   Get urls of all books.
+        *   Publish each book url to the `scrape_book_jobs` topic.
         
 - **Kafka Worker:**
     * Listens to the Kafka topic `scrape_book_jobs`.
