@@ -1,8 +1,6 @@
 import { Kafka } from "kafkajs";
 import env from "./env";
 
-console.log(env.KAFKA_BROKERS.split(","));
-
 const kafka = new Kafka({
   brokers: env.KAFKA_BROKERS.split(","),
 });

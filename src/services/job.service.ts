@@ -68,7 +68,6 @@ export const scrapeJob = async (job: Job): Promise<void> => {
             }
         }
     } catch (error: any) {
-        console.log("Error in scrapeJob:", error);
         await Job.update({ status: job_statuses.failed }, { where: { id: job.id } });
         log(log_levels.error, error);
         return

@@ -11,7 +11,6 @@ import { log } from "../utils/logger";
 import { publishMessageToTopic } from "../utils/kafka";
 
 export const analyzeBookPageService = async (payload: AnalyzePagePayloadDto): Promise<void> => {
-    console.log("Analyzing book page", payload);
     let { main_job_id, link, number_of_attempts, progress_weight } = payload;
     const timeout = 1000 * 60 * 2;
 
@@ -23,7 +22,6 @@ export const analyzeBookPageService = async (payload: AnalyzePagePayloadDto): Pr
 
     if (number_of_attempts >= env.MAX_JOB_RETRIES) {
         // Failure of at least one job means the entire job was partially completed.
-        console.log("Retries exceeded for: ", payload);
         await Job.update({ status : job_statuses.partially_completed }, { where : { id : job.id } });
         return;
     }

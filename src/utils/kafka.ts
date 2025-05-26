@@ -2,7 +2,6 @@ import { kafka_topics } from './consts';
 import { producer, consumer, kafkaAdmin } from '../config/kafka';
 
 export const publishMessageToTopic = async (topic: kafka_topics, message: any): Promise<void> => {
-    console.log(`Publishing message to topic: ${topic}`, message);
     await producer.connect();
     await producer.send({ topic, messages: [
         { value: JSON.stringify(message) }
