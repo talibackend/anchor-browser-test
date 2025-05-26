@@ -316,7 +316,7 @@
               "properties": {
                 "status": {
                   "type": "string",
-                  "example": "running | completed | failed"
+                  "example": "running | completed | failed | partially_completed"
                 },
                 "progress": {
                   "type": "string",

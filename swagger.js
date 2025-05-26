@@ -60,7 +60,7 @@ const doc = {
       "status": 200,
       "body": {
         "job": {
-          "status": "running | completed | failed",
+          "status": "running | completed | failed | partially_completed",
           "progress": "number",
           "id": "number",
           "theme": "string",
