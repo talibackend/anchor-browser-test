@@ -4,16 +4,15 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import { sequelize } from './config/database';
 import { log } from './utils/logger';
-import { log_levels, messages } from './utils/consts';
+import { kafka_topics, log_levels, messages } from './utils/consts';
 import env from "./config/env";
 import { StatusCodes } from 'http-status-codes';
 import swaggerUi from "swagger-ui-express";
 import swaggerFile from "../swagger-output-004weg24867t345rfubgb56661.json";
-
-import { scrapeJob } from './services/job.service';
-
 import jobRoutes from './routes/job.routes';
-import { Job } from './models/Job';
+
+import { analyzeBookPageService } from './services/worker.service'; 
+import { createConsumer, createTopic } from './utils/kafka';
 
 const app: Express = express();
 
@@ -26,6 +25,12 @@ sequelize
   .sync({ alter: true })
   .then(async () => {
     log(log_levels.info, messages.DB_CONNECTED);
+
+    // Create Kafka topic if it doesn't exist
+    await createTopic(kafka_topics.scrape_book_jobs); 
+
+    await createConsumer(kafka_topics.scrape_book_jobs, analyzeBookPageService);
+    log(log_levels.info, messages.KAFKA_CONSUMER_STARTED);
 
     app.listen(env.PORT, () => {
       log(log_levels.info, messages.SERVER_STARTED);
@@ -67,10 +72,3 @@ app.use("*", (req: Request, res: Response): Response => {
     status: StatusCodes.NOT_FOUND,
   });
 });
-
-// (async ()=>{
-//   setTimeout(async ()=>{
-//     let job = await Job.create({ search_string : "climate change" });
-//     await scrapeJob(job);
-//   }, 5000)
-// })()

@@ -7,7 +7,9 @@ export const messages = {
     NOT_FOUND: "Resource not found",
     NETWORK_ERROR: "A network error occured, please try again.",
     OK : "Request Successful.",
-    FORBIDDEN : "Access Forbidden."
+    FORBIDDEN : "Access Forbidden.",
+    JOB_NOT_FOUND : "Job not found.",
+    KAFKA_CONSUMER_STARTED : "Kafka consumer has been started successfully.",
 };
 
 export enum request_methods {
@@ -18,11 +20,16 @@ export enum request_methods {
 export enum job_statuses{
     running="running",
     completed="completed",
-    failed="failed"
+    failed="failed",
+    partially_completed="partially_completed"
 }
 
 export enum log_levels{
     warn="warn",
     error="error",
     info="info"
+}
+
+export enum kafka_topics{
+    scrape_book_jobs="scrape_book_jobs"
 }

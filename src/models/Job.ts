@@ -15,4 +15,7 @@ export class Job extends Model {
 
     @Column({ type: DataType.STRING, allowNull: false, defaultValue: job_statuses.running })
     public status!: job_statuses 
+
+    @Column({ type : DataType.FLOAT, defaultValue : 0 })
+    public percent_done!: number
 }

@@ -1,16 +1,13 @@
 import { Job } from "../models/Job";
-import { job_statuses, log_levels, messages, request_methods } from "../utils/consts";
+import { job_statuses, kafka_topics, log_levels, messages } from "../utils/consts";
 import { StatusCodes } from "http-status-codes";
 import { log } from "../utils/logger";
 import { ListJobBooksDto, ScrapeDto, SingleIdDto } from "../dtos/job";
 import { ResponseType } from "../dtos/api";
 import { deduplicateArray, pauseExecution, replaceAll } from "../utils/general";
-import { openRequest } from "../utils/network";
-import { getAuthorFromCover, getSummaryAndRelevanceScore } from "./openai.service";
-import puppeteer from "puppeteer";
 import { Book } from "../models/Book";
-import env from "../config/env";
-import { sequelize } from "../config/database";
+import { publishMessageToTopic } from "../utils/kafka";
+import browserPool from "../config/browser-pool";
 
 export const listJobBooksService = async (payload : ListJobBooksDto) : Promise<ResponseType> =>{
     let { id, limit, offset } = payload;
@@ -48,78 +45,31 @@ export const scrapeJob = async (job: Job): Promise<void> => {
         let url = `https://bookdp.com.au/?s=${replaceAll(job.theme.toLowerCase(), " ", "+")}&post_type=product`;
         const timeout = 1000 * 60 * 2; // 2 minutes
 
-        let browser = await puppeteer.launch({ args : ['--no-sandbox'], timeout });
-        let page = await browser.newPage();
+        let page = await browserPool.newPage();
         await page.goto(url, { waitUntil: 'networkidle0', timeout });
         await page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight); });
         await pauseExecution(1000);
         await page.waitForNetworkIdle({ idleTime: 5000, timeout });
 
-        let links: Array<string> = await page.$$eval('a', (links: any) => { return links.map((link: any) => { return link.href }) });
-        links = deduplicateArray(links.filter((link: string) => link.startsWith("https://bookdp.com.au/products/")));
+        let links: Array<string> = await page.$$eval('div.product-inner > div.product-thumbnail > a', (links: any) => { return links.map((link: any) => { return link.href }) });
+        links = deduplicateArray(links);
 
-        const analyzeBookPage = async (link: string): Promise<void> => {
-            try {
-                let page = await browser.newPage();
-                await page.goto(link, { waitUntil: 'networkidle0', timeout });
+        let percent_per_page = 100 / gitlinks.length;
 
-                let title = (await page.$eval('title', (title: any) => { return title.innerText })).split("|")[0].trim();
-                let desc = await page.$eval('div#tab-description > div.woocommerce-tabs--description-content', (description: any) => { return description.innerText });
-                let prices = await page.$$eval('span.woocommerce-Price-amount > bdi', (prices: any) => { return prices.map((price: any) => { return price.innerText }) });
-                let cover = await page.$eval('img.wp-post-image', (img : any) => { return img.src });
-                let discounted_price = Number(prices[0].substring(1));
-                let original_price = Number(prices[1].substring(1));
-                let discount_amount = original_price - discounted_price;
-                let discount_percent = Number(((discount_amount / original_price) * 100).toPrecision(2));
-                let { author, summary, relevance_score } = await getSummaryAndRelevanceScore(desc, job.theme);
-                let value_score = Number(((relevance_score * (100 - discount_percent)) / 100).toPrecision(2));
+        await page.close();  
 
-                await page.close();
-
-                if(author == "N/A"){
-                    author = await getAuthorFromCover(cover)
-                }
-
-                let payload = {
-                    job_id: job.id,
-                    title,
-                    author,
-                    desc,
-                    summary,
-                    current_price: discounted_price,
-                    original_price,
-                    discount_amount,
-                    discount_percent,
-                    url: link,
-                    relevance_score,
-                    value_score
-                };
-
-                return await sequelize.transaction(async (transaction: any) => {
-                    await openRequest(request_methods.post, env.MAKE_WEBHOOK_URL, payload);
-
-                    await Book.create(payload, { transaction });
-                    let currentJob = await Job.findOne({ where: { id: job.id }, transaction }) as Job;
-                    await currentJob.save({ transaction });
-                });
-            } catch (error: any) {
-                log(log_levels.error, error);
-                return;
+        for(let i = 0; i < links.length; i++){
+            let link = links[i];
+            try{
+                publishMessageToTopic(kafka_topics.scrape_book_jobs, { main_job_id: job.id, link, number_of_attempts : 0, progress_weight : percent_per_page });
+            }catch(error : any){
+                log(log_levels.error, `Failed to publish message for link ${link}: ${error.message} on job ${job.id}`);
+                continue;
             }
         }
-
-        let promises: Array<Promise<void>> = [];
-
-        // Used concurrency to trade off space for speed(O(1) time O(n) space)
-        for (let i = 0; i < links.length; i++) {
-            promises.push(analyzeBookPage(links[i]));
-        }
-
-        await Promise.all(promises);
-        await Job.update({ status: job_statuses.completed }, { where: { id: job.id } });
-        await browser.close();
     } catch (error: any) {
-        console.log(error);
+        console.log("Error in scrapeJob:", error);
+        await Job.update({ status: job_statuses.failed }, { where: { id: job.id } });
         log(log_levels.error, error);
         return
     }
