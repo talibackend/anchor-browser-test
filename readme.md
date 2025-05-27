@@ -116,18 +116,6 @@ The core goal is to demonstrate robust web automation, AI integration, efficient
 
         This simplified, single-worker design ensures all processing happens asynchronously and in one place, making deployment and debugging easier while still enabling concurrency and resilience via Kafka.
 
-
-## ⏱️ Concurrency & Performance
-
-### ⏳ Time Complexity: `O(1)`
-The system leverages Kafka's pub/sub model where each message is processed independently. Each message's processing happens in constant time (O(1)) with respect to its own size.
-With a retry policy of 3, the worst-case processing for a failed message is up to 3 retries. However, since retries are still constant time per attempt, the amortized time complexity remains O(1).
-
-### 🧠 Space Complexity: `O(n)`
-Here, n is the number of in-flight messages being concurrently processed.
-Even with retries, once a message is committed, it's no longer retained in memory.
-Because retries are published as new messages and old ones are fully committed, there's no cumulative memory buildup, and the space complexity remains O(n).
-
 ## 🔗 Make.com Integration Setup
 
 1.  **Log in to your Make.com account.**
